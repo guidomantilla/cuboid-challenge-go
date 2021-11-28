@@ -9,3 +9,5 @@ db/*
 .vscode/*
 !.vscode/launch.json
 reports
+
+.idea
