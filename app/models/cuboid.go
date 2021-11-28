@@ -17,21 +17,23 @@ type Cuboid struct {
 }
 
 func (c *Cuboid) PayloadVolume() uint {
-	return 0
+	return c.Width * c.Height * c.Depth
 }
 
 func (c *Cuboid) MarshalJSON() ([]byte, error) {
-	b, err := json.Marshal(struct {
+	bytesArray, err := json.Marshal(struct {
 		ID     uint `json:"id"`
 		Width  uint `json:"width"`
 		Height uint `json:"height"`
 		Depth  uint `json:"depth"`
+		Volume uint `json:"volume"`
+		BagID  uint `json:"bagId"`
 	}{
-		c.ID, c.Width, c.Height, c.Depth,
+		c.ID, c.Width, c.Height, c.Depth, c.PayloadVolume(), c.BagID,
 	})
 	if err != nil {
 		err = fmt.Errorf("failed to marshal Cuboid. %w", err)
 	}
 
-	return b, err
+	return bytesArray, err
 }

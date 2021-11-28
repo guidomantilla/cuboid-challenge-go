@@ -33,11 +33,11 @@ func driver() gorm.Dialector {
 		return sqlite.Open(config.ENV.DBName)
 	}
 
-	panic(driverErr{d}.Error())
+	panic(driverError{d}.Error())
 }
 
-type driverErr struct{ name string }
+type driverError struct{ name string }
 
-func (d driverErr) Error() string {
+func (d driverError) Error() string {
 	return fmt.Sprintf("DB driver '%s' not supported", d.name)
 }

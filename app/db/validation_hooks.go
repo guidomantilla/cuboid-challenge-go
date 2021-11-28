@@ -22,18 +22,18 @@ func registerDBValidationsHooks(db *gorm.DB) {
 	}
 }
 
-func validateModel(db *gorm.DB) {
-	if db.Error != nil || db.Statement.Schema == nil || db.Statement.SkipHooks {
+func validateModel(datasource *gorm.DB) {
+	if datasource.Error != nil || datasource.Statement.Schema == nil || datasource.Statement.SkipHooks {
 		return
 	}
 
-	record := getRecord(db)
+	record := getRecord(datasource)
 	if record == nil {
 		return
 	}
 
 	if ok, valErr := models.Validate(record); !ok {
-		_ = db.AddError(valErr)
+		_ = datasource.AddError(valErr)
 	}
 }
 
