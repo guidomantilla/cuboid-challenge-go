@@ -66,13 +66,13 @@ var _ = Describe("Cuboid", func() {
 			})
 
 			Specify("To JSON", func() {
-				m, err := testutils.Serialize(&value.Cuboid)
+				message, err := testutils.Serialize(&value.Cuboid)
 				Expect(err).NotTo(HaveOccurred())
-				Expect(m["width"]).To(BeEquivalentTo(value.Cuboid.Width))
-				Expect(m["height"]).To(BeEquivalentTo(value.Cuboid.Height))
-				Expect(m["depth"]).To(BeEquivalentTo(value.Cuboid.Depth))
-				Expect(m["volume"]).To(BeEquivalentTo(value.expectedVol))
-				Expect(m["bagId"]).To(BeEquivalentTo(value.Cuboid.BagID))
+				Expect(message["width"]).To(BeEquivalentTo(value.Cuboid.Width))
+				Expect(message["height"]).To(BeEquivalentTo(value.Cuboid.Height))
+				Expect(message["depth"]).To(BeEquivalentTo(value.Cuboid.Depth))
+				Expect(message["volume"]).To(BeEquivalentTo(value.expectedVol))
+				Expect(message["bagId"]).To(BeEquivalentTo(value.Cuboid.BagID))
 			})
 		})
 	}

@@ -12,8 +12,8 @@ import (
 )
 
 func MockRequest(method, path string, bodyStr *string) *httptest.ResponseRecorder {
-	r := router.Setup()
-	w := httptest.NewRecorder()
+	router := router.Setup()
+	writer := httptest.NewRecorder()
 
 	var body io.Reader
 	if bodyStr != nil {
@@ -24,9 +24,9 @@ func MockRequest(method, path string, bodyStr *string) *httptest.ResponseRecorde
 
 	ctx := context.Background()
 	req, _ := http.NewRequestWithContext(ctx, method, path, body)
-	r.ServeHTTP(w, req)
+	router.ServeHTTP(writer, req)
 
-	return w
+	return writer
 }
 
 func Serialize(d interface{}) (map[string]interface{}, error) {

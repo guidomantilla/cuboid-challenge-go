@@ -47,12 +47,12 @@ var _ = Describe("Cuboid Controller", func() {
 		It("Fetch all cuboids", func() {
 			l, _ := testutils.DeserializeList(w.Body.String())
 			Expect(len(l)).To(Equal(2))
-			for _, m := range l {
-				Expect(m["width"]).ToNot(BeNil())
-				Expect(m["height"]).ToNot(BeNil())
-				Expect(m["depth"]).ToNot(BeNil())
-				Expect(m["volume"]).ToNot(BeNil())
-				Expect(m["bagId"]).To(BeEquivalentTo(bag.ID))
+			for _, message := range l {
+				Expect(message["width"]).ToNot(BeNil())
+				Expect(message["height"]).ToNot(BeNil())
+				Expect(message["depth"]).ToNot(BeNil())
+				Expect(message["volume"]).ToNot(BeNil())
+				Expect(message["bagId"]).To(BeEquivalentTo(bag.ID))
 			}
 		})
 	})
@@ -74,13 +74,13 @@ var _ = Describe("Cuboid Controller", func() {
 			})
 
 			It("Get the cuboid", func() {
-				m, _ := testutils.Deserialize(w.Body.String())
-				Expect(m["id"]).To(BeEquivalentTo(bag.Cuboids[0].ID))
-				Expect(m["width"]).ToNot(BeNil())
-				Expect(m["height"]).ToNot(BeNil())
-				Expect(m["depth"]).ToNot(BeNil())
-				Expect(m["volume"]).ToNot(BeNil())
-				Expect(m["bagId"]).ToNot(BeNil())
+				message, _ := testutils.Deserialize(w.Body.String())
+				Expect(message["id"]).To(BeEquivalentTo(bag.Cuboids[0].ID))
+				Expect(message["width"]).ToNot(BeNil())
+				Expect(message["height"]).ToNot(BeNil())
+				Expect(message["depth"]).ToNot(BeNil())
+				Expect(message["volume"]).ToNot(BeNil())
+				Expect(message["bagId"]).ToNot(BeNil())
 			})
 		})
 
@@ -117,12 +117,12 @@ var _ = Describe("Cuboid Controller", func() {
 		})
 
 		It("Returns the created cuboid", func() {
-			m, _ := testutils.Deserialize(w.Body.String())
-			Expect(m["width"]).ToNot(BeNil())
-			Expect(m["height"]).ToNot(BeNil())
-			Expect(m["depth"]).ToNot(BeNil())
-			Expect(m["volume"]).ToNot(BeNil())
-			Expect(m["bagId"]).To(BeEquivalentTo(bag.ID))
+			message, _ := testutils.Deserialize(w.Body.String())
+			Expect(message["width"]).ToNot(BeNil())
+			Expect(message["height"]).ToNot(BeNil())
+			Expect(message["depth"]).ToNot(BeNil())
+			Expect(message["volume"]).ToNot(BeNil())
+			Expect(message["bagId"]).To(BeEquivalentTo(bag.ID))
 		})
 
 		Context("When cuboid does not fit into the bag", func() {
@@ -132,8 +132,8 @@ var _ = Describe("Cuboid Controller", func() {
 
 			It("Does not create the Cuboid", func() {
 				Expect(w.Code).To(Equal(400))
-				m, _ := testutils.Deserialize(w.Body.String())
-				Expect(m["error"]).To(Equal("Insufficient capacity in bag"))
+				message, _ := testutils.Deserialize(w.Body.String())
+				Expect(message["error"]).To(Equal("Insufficient capacity in bag"))
 			})
 		})
 
@@ -146,8 +146,8 @@ var _ = Describe("Cuboid Controller", func() {
 
 			It("Does not admit new cuboids", func() {
 				Expect(w.Code).To(Equal(400))
-				m, _ := testutils.Deserialize(w.Body.String())
-				Expect(m["error"]).To(Equal("Bag is disabled"))
+				message, _ := testutils.Deserialize(w.Body.String())
+				Expect(message["error"]).To(Equal("Bag is disabled"))
 			})
 		})
 	})
@@ -156,30 +156,96 @@ var _ = Describe("Cuboid Controller", func() {
 	// IMPLEMENT the tests BELOW
 
 	Describe("Update", func() {
-		PIt("Response HTTP status code 200")
+		var cuboid *Cuboid
+		BeforeEach(func() {
+			cuboid = &Cuboid{
+				Width:  1,
+				Height: 1,
+				Depth:  1,
+				BagID:  bag.ID,
+				Bag:    bag,
+			}
+			testutils.AddRecords(cuboid)
+		})
 
-		PIt("Returns the updated cuboid")
+		JustBeforeEach(func() {
+			body, _ := testutils.SerializeToString(cuboid)
+			w = testutils.MockRequest(http.MethodPut, "/cuboids/"+fmt.Sprintf("%v", cuboid.ID), &body)
+		})
+
+		It("Response HTTP status code 200", func() {
+			Expect(w.Code).To(Equal(200))
+		})
+
+		It("Returns the updated cuboid", func() {
+			message, _ := testutils.Deserialize(w.Body.String())
+			Expect(message["width"]).ToNot(BeNil())
+			Expect(message["height"]).ToNot(BeNil())
+			Expect(message["depth"]).ToNot(BeNil())
+			Expect(message["volume"]).ToNot(BeNil())
+			Expect(message["bagId"]).To(BeEquivalentTo(bag.ID))
+		})
 
 		Context("When cuboid does not fit into the bag", func() {
-			PIt("Response HTTP status code 400")
+			BeforeEach(func() {
+				cuboid.Width = 10000
+			})
+			It("Response HTTP status code 400", func() {
+				Expect(w.Code).To(Equal(400))
+			})
 
-			PIt("Response a JSON with error message 'Insufficient capacity in bag'")
+			It("Response a JSON with error message 'Insufficient capacity in bag'", func() {
+				message, _ := testutils.Deserialize(w.Body.String())
+				Expect(message["error"]).To(Equal("Insufficient capacity in bag"))
+			})
 		})
 
 		Context("When cuboid is not present", func() {
-			PIt("Response HTTP status code 404")
+			BeforeEach(func() {
+				cuboid.ID = 10000
+			})
+			It("Response HTTP status code 404", func() {
+				Expect(w.Code).To(Equal(404))
+			})
 		})
 	})
 
 	Describe("Delete", func() {
-		Context("When the cuboid is present", func() {
-			PIt("Response HTTP status code 200")
+		var cuboid *Cuboid
+		BeforeEach(func() {
+			cuboid = &Cuboid{
+				Width:  1,
+				Height: 1,
+				Depth:  1,
+				BagID:  bag.ID,
+				Bag:    bag,
+			}
+			testutils.AddRecords(cuboid)
+		})
 
-			PIt("Remove the cuboid")
+		JustBeforeEach(func() {
+			body, _ := testutils.SerializeToString(cuboid)
+			w = testutils.MockRequest(http.MethodDelete, "/cuboids/"+fmt.Sprintf("%v", cuboid.ID), &body)
+		})
+
+		Context("When the cuboid is present", func() {
+			It("Response HTTP status code 200", func() {
+				Expect(w.Code).To(Equal(200))
+			})
+
+			It("Remove the cuboid", func() {
+				message, _ := testutils.Deserialize(w.Body.String())
+				Expect(message["status"]).To(Equal("OK"))
+			})
 		})
 
 		Context("When cuboid is not present", func() {
-			PIt("Response HTTP status code 404")
+			BeforeEach(func() {
+				cuboid.ID = 10000
+			})
+			It("Response HTTP status code 404", func() {
+				Expect(w.Code).To(Equal(404))
+			})
 		})
 	})
 })

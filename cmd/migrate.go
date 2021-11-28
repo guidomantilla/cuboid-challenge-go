@@ -26,7 +26,7 @@ func migrateCmd() *cobra.Command { // nolint:funlen
 		Short: "Generte a new migrations file",
 		Args:  cobra.ExactValidArgs(1),
 		Run: func(cmd *cobra.Command, args []string) {
-			d := struct {
+			data := struct {
 				ID   string
 				NAME string
 			}{
@@ -34,29 +34,29 @@ func migrateCmd() *cobra.Command { // nolint:funlen
 				args[0],
 			}
 
-			f, err := os.Create(fmt.Sprintf("app/db/migrations/%s_%s.go", d.ID, d.NAME))
+			file, err := os.Create(fmt.Sprintf("app/db/migrations/%s_%s.go", data.ID, data.NAME))
 			if err != nil {
 				fmt.Println("Unable to create migration file:" + err.Error())
 
 				return
 			}
-			defer f.Close()
+			defer file.Close()
 
 			var out bytes.Buffer
 			t := template.Must(template.ParseFiles("./cmd/migration.template"))
-			if err := t.Execute(&out, d); err != nil {
+			if err := t.Execute(&out, data); err != nil {
 				fmt.Println("Unable to execute template:" + err.Error())
 
 				return
 			}
 
-			if _, err := f.WriteString(out.String()); err != nil {
+			if _, err := file.WriteString(out.String()); err != nil {
 				fmt.Println("Unable to write to migration file:" + err.Error())
 
 				return
 			}
 
-			fmt.Println("Generated new migration file ", f.Name())
+			fmt.Println("Generated new migration file ", file.Name())
 		},
 	}
 

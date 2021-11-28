@@ -38,16 +38,16 @@ type ValidationErrors []FieldError
 
 // Error concatenates all the contained field errors messages.
 func (v ValidationErrors) Error() string {
-	r := ""
+	raw := ""
 	for _, e := range v {
-		if len(r) > 0 {
-			r += "\n"
+		if len(raw) > 0 {
+			raw += "\n"
 		}
 
-		r += e.Error()
+		raw += e.Error()
 	}
 
-	return r
+	return raw
 }
 
 type recordValidator interface {
